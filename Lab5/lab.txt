@@ -1,0 +1,109 @@
+I first wrote the programs tr2u.c and tr2b.c, compiled them with gcc.  (I used a
+Makefile to speed up development).  We are looking to see whether a buffered
+version of I/O is faster than an unbuffered version.
+
+I created a file that has 5000000 bytes to test.
+head --bytes=5000000 /dev/urandom > input.txt
+ls -l input.txt
+-rw-r--r-- 1 chuen csugrad 5000000 Nov  2 23:02 input.txt
+
+I use strace to compare calls to tr2u.c and tr2b.c.  
+strace -c ./tr2b "abc" "def" < input.txt > tr2b_output.txt
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 66.83    0.000278           0       611           write
+ 33.17    0.000138           0       613           read
+  0.00    0.000000           0         2           open
+  0.00    0.000000           0         2           close
+  0.00    0.000000           0         4           fstat
+  0.00    0.000000           0         9           mmap
+  0.00    0.000000           0         4           mprotect
+  0.00    0.000000           0         1           munmap
+  0.00    0.000000           0         1           brk
+  0.00    0.000000           0         1         1 access
+  0.00    0.000000           0         1           execve
+  0.00    0.000000           0         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00    0.000416                  1250         1 total
+
+strace -c ./tr2u "abc" "def" < input.txt > tr2u_output.txt
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 55.41   27.530879           6   5000000           write
+ 44.58   22.150331           4   5000002           read
+  0.00    0.000049           7         7           mmap
+  0.00    0.000037           9         4           mprotect
+  0.00    0.000018           9         2           open
+  0.00    0.000012          12         1           munmap
+  0.00    0.000008           8         1         1 access
+  0.00    0.000007           4         2           fstat
+  0.00    0.000006           3         2           close
+  0.00    0.000006           6         1           execve
+  0.00    0.000004           4         1           arch_prctl
+  0.00    0.000003           3         1           brk
+------ ----------- ----------- --------- --------- ----------------
+100.00   49.681360              10000024         1 total
+
+It is clear that the unbuffered version almost 50 seconds to execute, while the
+unbuffered version took a fraction of a second to finish.  This is because we
+are executing many more calls to the system read and writes.
+
+We test out the system calls when writing to the screen
+
+strace -c ./tr2b "abc" "def" < input.txt 
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 97.92    0.067316           3     19855           write
+  2.08    0.001430           2       613           read
+  0.00    0.000000           0         2           open
+  0.00    0.000000           0         2           close
+  0.00    0.000000           0         4           fstat
+  0.00    0.000000           0         9           mmap
+  0.00    0.000000           0         4           mprotect
+  0.00    0.000000           0         1           munmap
+  0.00    0.000000           0         1           brk
+  0.00    0.000000           0         1         1 access
+  0.00    0.000000           0         1           execve
+  0.00    0.000000           0         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00    0.068746                 20494         1 total
+
+strace -c ./tr2u "abc" "def" < input.txt 
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 56.01   25.937612           5   5000000           write
+ 43.99   20.371807           4   5000002           read
+  0.00    0.000000           0         2           open
+  0.00    0.000000           0         2           close
+  0.00    0.000000           0         2           fstat
+  0.00    0.000000           0         7           mmap
+  0.00    0.000000           0         4           mprotect
+  0.00    0.000000           0         1           munmap
+  0.00    0.000000           0         1           brk
+  0.00    0.000000           0         1         1 access
+  0.00    0.000000           0         1           execve
+  0.00    0.000000           0         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00   46.309419              10000024         1 total
+
+Again, the buffered version for I/O is much faster, because it executes fewer
+calls to read and write.  However, it is slower than when printing to a file,
+perhaps because it is printing to the screen and so dumps the buffer more often
+to push input into the screen.
+
+Interestingly, the unbuffered version is faster while printing to the terminal,
+while the buffered version is faster while printing to a file.
+
+We now test copying files using time.
+
+time ./tr2b 'abc' 'xyz' < input.txt > tr2b_output.txt
+real    0m0.335s
+user    0m0.246s
+sys    0m0.006s
+
+time ./tr2u 'abc' 'xyz' < input.txt > tr2u_output.txt
+real    0m7.101s
+user    0m0.356s
+sys    0m6.617s
+
+Obviously, the buffered version is much faster than the unbuffered version. 

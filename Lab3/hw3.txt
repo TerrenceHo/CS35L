@@ -1,0 +1,40 @@
+Q1:  It was not necessary to remove that line, because it is a case condition
+that falls through to the next line with the exact same case.  It was only an
+attempt to clean up messy code to be more maintainable.
+
+Q2: The UNIX version caters to English speaking users rather than international
+users.  This format has written months which may not be understandable 
+to those that do not speak English, such as international workers.
+Additionally, this implementation may cause bugs later down in the road due to
+incompatibility with the main source tree of the coreutils, which may make
+updating harder.  
+
+Q3: /dev/null is an empty file for developers to dump their output into if they
+do not want it.  The program expects the file to have some text data inside, but
+if there isn't any then an index out of range error is raised, because there is
+no input.  
+Traceback (most recent call last):
+  File "randline.py", line 70, in <module>
+    main()
+  File "randline.py", line 64, in main
+    sys.stdout.write(generator.chooseline())
+  File "randline.py", line 34, in chooseline
+    return random.choice(self.lines)
+  File "/usr/local/cs/Python-2.7.12/lib/python2.7/random.py", line 275, in choice
+    return seq[int(self.random() * len(seq))]  # raises IndexError if seq is empty
+IndexError: list index out of range
+
+Q4: A syntax error is raised.  Exceptions in Python were iterable and
+implemented as a tuple.  In Python2, you could deference this list and unpack it
+into it's different variables, but Python3 remove this ability.  This is known
+as tuple unpacking.  
+
+  File "randline.py", line 65
+    except IOError as (errno, strerror):
+                      ^
+SyntaxError: invalid syntax
+
+To fix this, you would need something like this:
+
+except IOError as e:
+    errno, strerror = e.args

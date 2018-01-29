@@ -1,0 +1,82 @@
+First, we checkout v3.0 in a new branch called v3.0
+git checkout v3.0 -b quote
+
+We apply a quote-3.0-patch.txt using patch
+patch -p1 < quote-3.0-patch.txt
+patching file src/cmp.c
+patching file src/diff.c
+patching file src/diff3.c
+patching file src/dir.c
+patching file src/sdiff.c
+patching file src/util.c
+
+I used emacs to open up Changelog (C-x 4 a) and then write my git commit message
+inside the change log for each file.
+emacs src/filename.c
+...
+
+ChangeLog:
+2017-12-02  Terrence Kui Chuen Ho  <chuen@lnxsrv09.seas.ucla.edu>
+
+        * src/util.c: For functions, remove all outputs that use ` and replace with '
+
+        * src/sdiff.c: For functions, remove all outputs that use ` and replace with '
+
+        * src/dir.c: For functions, remove all outputs that use ` and replace with '
+
+        * src/diff3.c: For functions, remove all outputs that use ` and replace with '
+
+        * src/diff.c: For functions, remove all outputs that use ` and replace with '
+
+        * src/cmp.c: For functions, remove all outputs that use ` and replace with '
+
+We commit using this change log and format a patch
+git add .
+git commit -F Changelog
+git format-patch -1 --stdout > formatted-patch.txt
+
+We then download my partner's patch onto my computer and create a new branch to
+apply his patch.
+git checkout v3.0 -b partner
+git am < sijay-patch.txt
+Applying: 2017-11-30 jonas <yisaj@jonas>
+git log 
+
+commit 12633dcf09c6829c8fa3ee13a208b720c4a09a67 (HEAD -> partner)
+Author: yisaj <sijay.liu@gmail.com>
+Date:   Thu Nov 30 13:26:33 2017 -0800
+
+    2017-11-30 jonas <yisaj@jonas>
+
+            maint: quote 'like this' or "like this", `like this'
+
+            This is a backported change for corutils v3.0 for quoting
+            'like this' or "like this", instead of `like this' or
+            ``like this''.
+            * src/cmp.c src/diff.c src/diff3.c:
+            * src/dir.c src/sdiff.c src/util.c:
+            Quote 'like this' in output.
+
+The log shows that his patch was applied onto our branch
+We run the same steps as in the lab to configure and run the diffutils
+./bootstrap
+patch -p0 < diffutils-gets.diff
+./configure
+make
+make check
+make distdir
+
+This created a directory diffutils-3.0.1-5dec, which had my partner's Changelog,
+which was the same as the log above.  As such, using my partner's patch was
+successful.
+
+This next section concerns using gitk:
+I download XQuartz for Mac, and use it to log onto SSH.  This allows me to use
+gitk on the Linux server and stream back visuals.
+git clone git://git.savannah.gnu.org/emacs.git gitrepo
+cd gitrepo
+gitk
+
+Using the UI, we locate the latest merge point now later than 2015:
+Joakim Verona <joakim@verona.se> 2015-01-25 12:19:27
+Merge branch 'master' into xwidget

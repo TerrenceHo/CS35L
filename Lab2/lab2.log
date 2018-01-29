@@ -1,0 +1,216 @@
+1. Setup
+Setting locale:
+export LC_ALL='C'
+
+Sorting words in /usr/share/dict/words:
+sort -u /usr/share/dict/words > words
+
+Download webpage:
+wget http://web.cs.ucla.edu/classes/winter16/cs35L/assign/assign2.html
+wget http://mauimapp.com/moolelo/hwnwdseng.htm
+
+2. Command Testing
+tr -c 'A-Za-z' '[\n*]' < assign2.html
+This command outputs anything that is a letter, and replaces everything with a
+newline character.
+
+tr -cs 'A-Za-z' '[\n*]' < assign2.html
+This also outputs anything that is a letter and replaces everything with a
+newline character, but it squeezes all the repeating newlines into one, 
+removing all excess space.
+
+tr -cs 'A-Za-z' '[\n*]' < assign2.html | sort
+This sorts the previous output alphabetically by word.  Words are still 
+repeated.
+
+tr -cs 'A-Za-z' '[\n*]' < assign2.html | sort -u
+The output is still sorted, but each word is unique and only appears once.
+
+tr -cs 'A-Za-z' '[\n*]' < assign2.html | sort -u | comm - words
+This command reads in the sorted unique words of the webpage and compares it to
+the words file.  The first column outputs lines unique to the webpage.  The
+second column outputs lines unique to the second column.  The last column
+outputs words that are common to both files.
+
+3. Buildwords Script
+#!/bin/bash
+# Grep for all table entries using <td>. Reads input from stdin.
+grep '<td>.\{1,\}<\/td>' |
+
+# Select every other line using sed
+sed -n '1~2!p' |
+
+# Replcae all uppercase to lowercase
+tr "A-Z" "a-z" |
+
+# Replace all ` with '
+tr "\`" "\'" |
+
+# Replace <td> with nothing.  Do the same for all html tags
+sed 's/<td>//g' |
+sed 's/<\/td>//g' |
+sed 's/<u>//g' |
+sed 's/<\/u>//g' |
+
+# # Remove all leading spaces
+sed 's/^\s*//g' |
+
+# # Remove all commas and replace spaces with a new line
+sed 's/,//g' |
+sed 's/\s/\n/g' |
+
+# # remove anything that is not a Hawaiian letter
+sed '/-/d' |
+tr -cd "pk\'mnwlhaeiou\n" |
+
+# sort input and make unique
+sort -u |
+sed '/^$/d'
+
+exit 0
+
+4. Run script
+chmod +x buildwords # Make it executable
+./buildwords < hwnwdseng.htm > hwords # Execute script
+
+5. Spell Checking
+We want to find how many misspelled English words are on the webpage.
+tr -cs 'A-Za-z' '[\n*]' < assign2.html | tr '[:upper:]' '[:lower:]' | \
+sort -u | comm -23 - words > EnglishMisspelled
+wc -w EnglishMisspelled
+There are 38 misspelled English words on the webpage.
+
+We want to find out how many misspelled Haiwaiian words are on the webpage
+tr -cs "pk\'mnwlhaeiou" '[\n*]' | tr '[:upper:]' '[:lower:]' | sort -u | \ 
+comm -23 - hwords > misHaiwaiian
+wc -w HaiwaiianMisspelled
+There are 198 misspelled Haiwaiian words on the webpage.
+
+We want to find words that are Misspelled English but not misspelled Haiwaiian
+words.  
+tr -cs "pk\'mnwlhaeiou" '[\n*]' < EnglishMisspelled | sort -u | comm -12 - \
+hwords > EngHaiMisspelled
+There are six English words  misspelled that are Haiwaiian.  They are listed 
+below.
+e
+halau
+i
+lau
+po
+wiki
+
+We want to find out how many Haiwaiian words misspelled are actually English
+words.
+tr -cs 'A-Za-z' '[\n*]' < HaiwaiianMisspelled | sort -u | \ 
+comm -12 - words > HaiEngMisspelled
+There are 109 misspelled Haiwaiian words that are English words.  They are
+listed below.
+a
+ail
+ain
+ake
+al
+ale
+alen
+all
+amine
+amp
+ample
+an
+aph
+aul
+awk
+e
+ea
+ee
+el
+em
+emp
+en
+ep
+epa
+h
+ha
+han
+hap
+he
+hei
+hell
+hem
+hen
+hi
+hin
+ho
+how
+howe
+ia
+ie
+ile
+imp
+in
+ion
+iou
+k
+keep
+kin
+l
+lan
+le
+lea
+li
+like
+line
+link
+ll
+ln
+lo
+lowe
+m
+mail
+man
+me
+men
+mi
+ml
+mo
+mp
+n
+name
+ne
+nee
+no
+non
+nu
+num
+o
+om
+on
+one
+op
+ope
+open
+owe
+own
+p
+pe
+pell
+people
+plea
+pu
+u
+ui
+ula
+ule
+ume
+ump
+un
+uni
+w
+wa
+wan
+we
+wh
+wha
+who
+wi
+wo

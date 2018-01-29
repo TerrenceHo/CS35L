@@ -1,0 +1,123 @@
+I create a file called lines.txt containing the line 
+"My name is Terrence, and I am a programmer."
+various amounts of time, in powers of 10. We can use this file as input to test
+sfrob and sfrobu.
+
+----- Testing with 100 lines -----
+time ./sfrob < lines.txt
+real    0m0.004s
+user    0m0.000s
+sys     0m0.002s
+
+time ./sfrobu < lines.txt
+real    0m0.007s
+user    0m0.002s
+sys     0m0.003s
+
+time ./sfrobs < lines.txt
+real    0m0.008s
+user    0m0.001s
+sys     0m0.006s
+
+time ./sfrobu -f < lines.txt
+real    0m0.007s
+user    0m0.000s
+sys     0m0.005s
+
+time ./sfrobs -f < lines.txt
+real    0m0.006s
+user    0m0.001s
+sys     0m0.006s
+
+----- Testing with 1000 lines -----
+time ./sfrob < lines.txt > output.txt
+real    0m0.011s
+user    0m0.006s
+sys     0m0.002s
+
+time ./sfrobu < lines.txt > output.txt
+real    0m0.042s
+user    0m0.006s
+sys     0m0.033s
+
+time ./sfrobs < lines.txt > output.txt
+real    0m0.010s
+user    0m0.004s
+sys     0m0.006s
+
+time ./sfrobu -f < lines.txt > output.txt
+real    0m0.044s
+user    0m0.007s
+sys     0m0.035s
+
+time ./sfrobs -f < lines.txt > output.txt
+real    0m0.010s
+user    0m0.005s
+sys     0m0.006s
+
+----- Testing with 10000 lines -----
+time ./sfrob < lines.txt > output.txt
+real    0m0.081s
+user    0m0.067s
+sys     0m0.005s
+
+time ./sfrobu < lines.txt > output.txt
+real    0m0.430s
+user    0m0.057s
+sys     0m0.364s
+
+time ./sfrobs < lines.txt > output.txt
+real    0m0.039s
+user    0m0.020s
+sys     0m0.014s
+
+time ./sfrobu -f < lines.txt > output.txt
+real    0m0.418s
+user    0m0.059s
+sys     0m0.350s
+
+time ./sfrobs -f < lines.txt > output.txt
+real    0m0.050s
+user    0m0.037s
+sys     0m0.010s
+
+----- Testing with 100000 lines -----
+time ./sfrob < lines.txt > output.txt
+real    0m1.136s
+user    0m0.906s
+sys     0m0.177s
+
+time ./sfrobu < lines.txt > output.txt
+real    0m21.308s
+user    0m0.932s
+sys     0m18.702s
+ 
+time ./sfrobs < lines.txt > output.txt
+real    0m0.625s
+user    0m0.328s
+sys     0m0.258s
+
+time ./sfrobu -f < lines.txt > output.txt
+real    0m16.491s
+user    0m0.803s
+sys     0m15.581s
+
+time ./sfrobs -f < lines.txt > output.txt
+real    0m0.688s
+user    0m0.498s
+sys     0m0.171s
+
+We can see that sfrob and sfrobs scale much better as the number of items
+increases.  sfrobu is simply too slow without buffering its write and reads.
+sfrobs is actually faster than regular sfrob, probably because out script calls
+many optimized executables that are much more tuned than our hacked together
+scripts.
+
+In conclusion, buffering reads and writes makes a huge difference when reading
+in characters.  When writing programs, using read and write directly should
+probably be avoided
+
+Having tested with both sfrob and sfrobu, the number of comparisons is linked to
+the implementation of qsort, which in this case should be a form of quicksort.
+Thus the number of comparisons rises as a function of NlogN, where N is the
+number of items to sort.  This is related to Big O of algorithms.  

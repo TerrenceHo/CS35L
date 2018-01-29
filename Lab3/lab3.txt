@@ -1,0 +1,123 @@
+We want to get a copy of the coreutils.
+wget ftp://ftp.gnu.org/gnu/coreutils/coreutils-7.6.tar.gz
+
+We need to unzip the coreutils and move into the directory
+tar -xzvf coreutils-7.6.tar.gz
+cd coreutils-7.6
+
+Now we need to install the coreutils onto a local directory. First, we make a 
+directory to install the buggy coreutils
+mkdir ~/coreutilsInstall
+
+Then we run the configure command to set the install directory to
+/u/cs/ugrad/chuen/coreutilsInstall
+./configure --prefix=/u/cs/ugrad/chuen/coreutilsInstall
+
+Then we run make and make install to compile the coreutils and install into our
+predefined directory.  (I also ran make check to ensure that my copies of the
+coreutils were correct)
+make
+make install
+
+Now we can try to test the buggy ls executable.  
+~/coreutilsInstall/bin/ls -l /bin/bash
+-rwxr-xr-x 1 root root 942200 2017-02-15 04:37 /bin/bash
+
+We apply Brady's patch by using the patch command.  We first copy Brady's patch
+diff into a file called patchfile, then ran:
+patch -p1 < patchfile
+patching file src/ls.c
+Hunk #1 succeeded at 2013 (offset -1 lines).
+Hunk #2 succeeded at 2028 (offset -1 lines).
+
+The buggy ls files have been patched using Brady's patch.
+Then we run make into top tree directory to recompile the coreutils.  The output
+of this is shown below.  It can be seen that the make command compiled much
+fewer files than the first make command.
+make
+
+make  all-recursive
+make[3]: Entering directory '/w/home.11/cs/ugrad/chuen/CS35L/Lab3/coreutils-7.6/lib'
+make[4]: Entering directory '/w/home.11/cs/ugrad/chuen/CS35L/Lab3/coreutils-7.6/lib'
+make[4]: Leaving directory '/w/home.11/cs/ugrad/chuen/CS35L/Lab3/coreutils-7.6/lib'
+make[3]: Leaving directory '/w/home.11/cs/ugrad/chuen/CS35L/Lab3/coreutils-7.6/lib'
+make[2]: Leaving directory '/w/home.11/cs/ugrad/chuen/CS35L/Lab3/coreutils-7.6/lib'
+Making all in src
+make[2]: Entering directory '/w/home.11/cs/ugrad/chuen/CS35L/Lab3/coreutils-7.6/src'
+make  all-am
+make[3]: Entering directory '/w/home.11/cs/ugrad/chuen/CS35L/Lab3/coreutils-7.6/src'
+  CC     ls.o
+  CCLD   dir
+  CCLD   vdir
+  CCLD   ls
+make[3]: Leaving directory '/w/home.11/cs/ugrad/chuen/CS35L/Lab3/coreutils-7.6/src'
+make[2]: Leaving directory '/w/home.11/cs/ugrad/chuen/CS35L/Lab3/coreutils-7.6/src'
+Making all in doc
+make[2]: Entering directory '/w/home.11/cs/ugrad/chuen/CS35L/Lab3/coreutils-7.6/doc'
+make[2]: Nothing to be done for 'all'.
+make[2]: Leaving directory '/w/home.11/cs/ugrad/chuen/CS35L/Lab3/coreutils-7.6/doc'
+Making all in man
+make[2]: Entering directory '/w/home.11/cs/ugrad/chuen/CS35L/Lab3/coreutils-7.6/man'
+  GEN    dir.1
+  GEN    vdir.1
+  GEN    ls.1
+make[2]: Leaving directory '/w/home.11/cs/ugrad/chuen/CS35L/Lab3/coreutils-7.6/man'
+Making all in po
+make[2]: Entering directory '/w/home.11/cs/ugrad/chuen/CS35L/Lab3/coreutils-7.6/po'
+make[2]: Nothing to be done for 'all'.
+make[2]: Leaving directory '/w/home.11/cs/ugrad/chuen/CS35L/Lab3/coreutils-7.6/po'
+Making all in tests
+make[2]: Entering directory '/w/home.11/cs/ugrad/chuen/CS35L/Lab3/coreutils-7.6/tests'
+make[2]: Nothing to be done for 'all'.
+make[2]: Leaving directory '/w/home.11/cs/ugrad/chuen/CS35L/Lab3/coreutils-7.6/tests'
+Making all in gnulib-tests
+make[2]: Entering directory '/w/home.11/cs/ugrad/chuen/CS35L/Lab3/coreutils-7.6/gnulib-tests'
+make  all-recursive
+make[3]: Entering directory '/w/home.11/cs/ugrad/chuen/CS35L/Lab3/coreutils-7.6/gnulib-tests'
+make[4]: Entering directory '/w/home.11/cs/ugrad/chuen/CS35L/Lab3/coreutils-7.6/gnulib-tests'
+make[4]: Nothing to be done for 'all-am'.
+make[4]: Leaving directory '/w/home.11/cs/ugrad/chuen/CS35L/Lab3/coreutils-7.6/gnulib-tests'
+make[3]: Leaving directory '/w/home.11/cs/ugrad/chuen/CS35L/Lab3/coreutils-7.6/gnulib-tests'
+make[2]: Leaving directory '/w/home.11/cs/ugrad/chuen/CS35L/Lab3/coreutils-7.6/gnulib-tests'
+make[2]: Entering directory '/w/home.11/cs/ugrad/chuen/CS35L/Lab3/coreutils-7.6'
+make[2]: Nothing to be done for 'all-am'.
+make[2]: Leaving directory '/w/home.11/cs/ugrad/chuen/CS35L/Lab3/coreutils-7.6'
+make[1]: Leaving directory '/w/home.11/cs/ugrad/chuen/CS35L/Lab3/coreutils-7.6'
+
+The make command only entered the directories and recompiled files that it
+saw were changed.  Since we had only touched the ls file, it
+only recompiled the ls command as well as any other executable that relied on
+ls.  For every executable that relied on ls, their man pages were also
+recompiled.  Often, make would enter a directory only to do nothing in the
+directory and leave, such as when it entered the directory "po".  These make
+entries are unnecessary and waste CPU cycles.
+
+We only make the patched ls executable and do not install it.  This way we keep
+the unpatched and patched ls on our system. We can now test out the difference
+on /bin/bash.
+~/Desktop/CS35L/Lab3/coreutils-7.6/src/ls -l /bin/bash
+-rwxr-xr-x 1 root root 960632 Aug  3 06:36 /bin/bash
+
+This output is the exact same as the system ls.
+
+We can also test all three versions of ls on a file that we artifically marked
+as more than one year old.
+touch 1yr.txt
+touch -a -m -t 201501181205.09 1yr.txt
+
+System ls
+ls -l 1yr.txt
+-rw-r--r-- 1 chuen csugrad 0 Jan 18  2015 1yr.txt
+
+Buggy ls
+~/coreutilsInstall/bin/ls -l 1yr.txt 
+-rw-r--r-- 1 chuen csugrad 0 2015-01-18 12:05 1yr.txt
+
+Patched ls
+~/CS35L/Lab3/coreutils-7.6/src/ls -l 1yr.txt
+-rw-r--r-- 1 chuen csugrad 0 Jan 18  2015 1yr.txt
+
+The patched ls and the system ls now have the same output, meaning our patch was
+correct.  The buggy ls still outputs the date in the wrong format.
+
+

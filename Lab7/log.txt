@@ -1,0 +1,60 @@
+robbie@10.97.85.182
+terrence@10.97.85.173
+
+I logged onto my BeagleBone by using 
+ssh root@192.168.7.2
+
+First we needed to connect our BeagleBone to the specified wifi,
+CR3760-Wifi. 
+sudo connmanctl
+connmanctl> enable wifi
+connmanctl> scan wifi
+connmanctl> services
+connmanctl> agent on
+connmanctl> connect wifi_2cf7f1065020_4352333736302d77696669_managed_ps
+connmanctl> Passphrase? <Insert Password>
+connmanctl> quit
+
+Once I logged onto my BeagleBone chip, I set up a user directory
+for my partner under /home/robbie.  
+sudo useradd -d /home/robbie -m robbie
+sudo passwd robbie
+
+I then gave him permissions into the .ssh directory
+cd /home/robbie
+sudo mkdir .ssh
+sudo chown -R robbie .ssh
+sudo chmod 700 .ssh
+
+On my own BeagleBone, I created a public/private key pair to be able
+to put my public key onto my partner's BeagleBone server and then ssh
+into the server without having to use a password. We use ssh-copy-id
+to place my public key onto my partner's BeagleBone. 
+We use ssh-agent to
+add the private key to the authentiation process.
+ssh-keygen
+ssh-copy-id -i terrence@10.97.85.173
+
+We use ssh-agent to manage authentication, so we do not have to type the
+password we set earlier to ssh into out partner's BeagleBone.
+eval "$(ssh-agent)"
+ssh-add
+ssh terrence@10.97.85.173
+
+Once on the server, I ran a couple commands to confirm that I was
+on my partner's BeagleBone.  For example, the home directory that
+he set up for me was /home/terrence.  Thus I ran pwd to confirm this.
+pwd
+/home/terrence
+
+I am in the directory that he set up for me. Additionally, I ran the firefox
+command.
+
+firefox
+(firefox-esr:1465): Gtk-WARNING **: Locale not supported by C library.
+	Using the fallback 'C' locale.
+Error: GDK_BACKEND does not match available displays
+
+Firefox didn't work because it requires a graphical component that
+was not installed. But we did verify that I was on my partner's 
+BeagleBone

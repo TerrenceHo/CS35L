@@ -1,0 +1,46 @@
+gpg --gen-key
+Used this command to generate a key pair.  Put in the necessary information to
+generate the key.  Was running find / > /dev/null to generate entropy
+
+Retrieved public key by using the command 
+gpg --armor --export terrenceho.books@gmail.com > hw-pubkey.asc
+
+1. If another team was watching our network bytes, it would still be secure
+since the messages are still encrypted.  The private key is stored securely on
+our computer and should never enter network streams.  Even if they have the
+public key that we used to encrypt our messages, they don't have the private key
+to decrypt it, and it is not possible to derive the private key from the public
+key without an immortal life longer than the age of the universe. (Unless prime
+factorization becomes a solved problem)
+
+(1) Tapping keyboards would make the password we used insecure to be used with
+other sites that require a password to be insecure, because they have the
+password.  But due to the way the key generation works by gathering random
+bytes, key generation should be different even if the password used is the same.
+As such, it is not a security vulnerability that they tapped your password in
+regards to the key
+
+(2) If they temporarily had control of the USB, then they could have tampered
+with the USB to establish remote control or have a keylogger send back
+information.  Thus they could have access to the private key, which would allow
+them to decrypt information encoded by the key, creating a security
+vulnerability.
+
+2. If a man in the middle intercepted my tar file and signature, they could
+unzip the tar file, replace the public key with their own public key, sign the
+tar file using their own public key and replace the signature.  In this case,
+gpg --verify  will say the key is OK, because the signature came from the same
+key.  Thus, the problem with gpg --verify is that it only can compare if a key
+signed a document, not who's document it belonged too.  
+
+There is no way to fix this problem without placing trust in a third party
+system or handing your public key face to face with another person, which
+defeats the purpose of wireless communications.  The best way to allow a
+recipient to check whether the enclosed key belongs to you is to post your
+public key onto a secure public forum, where the recipient knows that you key
+can be found on the public forum and thus allow them to check whether the key is
+the same.  
+
+If this public forum were compromised however, then an attacked could
+replace the public key on the forum with their public key, then intercept a
+message and replace the public key and signature.  

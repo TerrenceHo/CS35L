@@ -1,0 +1,39 @@
+We want to create a file with 10000000 floating point numbers.  We use the
+following command to get characters from /dev/urandom, and get rid of leading
+numbers and spaces.
+
+head --bytes=80000000 /dev/urandom | od -tf | sed "s/^[0-7]* *//g" | tr -s " "
+"[\n*]" > floating_point.txt
+wc -l floating_point.txt
+
+time -p sort -g floating_point.txt > /dev/null
+real 36.48
+user 197.37
+sys 1.68
+
+time -p sort -g --parallel=1 floating_point.txt > /dev/null
+real 189.29
+user 189.04
+sys 0.24
+
+time -p sort -g --parallel=2 floating_point.txt > /dev/null
+real 100.24
+user 191.95
+sys 0.28
+
+time -p sort -g --parallel=4 floating_point.txt > /dev/null
+real 58.26
+user 197.86
+sys 1.00
+
+time -p sort -g --parallel=8 floating_point.txt > /dev/null
+real 37.09
+user 198.14
+sys 0.55
+
+We presume that sort must be multithreaded from the start, with around 8 threads
+because the regular sort is about as fast as the sort with 8 threads.  However,
+we do notice that does noticeably decrease real time taken to sort the floating
+point numbers, however, user time remains about the same.  Using twice the
+amount of threads almost halves the time needed to sort, meaning there are
+diminishing returns on using more threads.

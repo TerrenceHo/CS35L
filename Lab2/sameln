@@ -1,0 +1,53 @@
+#!/bin/bash
+
+# Declare variables and retrieve one input
+DIR=$1
+REG_FILES=`ls $DIR | sort`
+HIDDEN_FILES=`ls -a $DIR | grep "^\." | sort`
+IFS=$'\n'
+declare -a FILE_ARRAY
+let COUNT=0
+
+# Loop through hidden files
+for HFILE in $HIDDEN_FILES
+do 
+    if [ ! -r "$DIR/$HFILE" ]
+    then
+        echo "ERROR: You do not have permission to read $DIR/$HFILE"
+    elif [[ ! -L "$DIR/$HFILE" && -f "$DIR/$HFILE" ]]
+    then
+        FILE_ARRAY[$COUNT]="$DIR/$HFILE"
+        let COUNT=COUNT+1
+    fi
+done
+
+# Loop through regular files
+for RFILE in $REG_FILES
+do 
+    if [ ! -r "$DIR/$RFILE" ]
+    then
+        echo "ERROR: You do not have permission to read $DIR/$RFILE"
+    elif [[ ! -L "$DIR/$RFILE" && -f "$DIR/$RFILE" ]]
+    then
+        FILE_ARRAY[$COUNT]="$DIR/$RFILE"
+        let COUNT=COUNT+1
+    fi
+done
+
+for (( i=0; i<$COUNT; i++ ))
+do
+    for (( j=i+1; j<$COUNT; j++ ))
+    do
+        if [[ -s "${FILE_ARRAY[$i]}" && -s "${FILE_ARRAY[$j]}" || \
+            ! -s "${FILE_ARRAY[$i]}" && ! -s "${FILE_ARRAY[$j]}" ]]
+        then
+            COMPARE=$(cmp "${FILE_ARRAY[$i]}" "${FILE_ARRAY[$j]}")
+            if [ ! $COMPARE ]
+            then
+                ln -f "${FILE_ARRAY[$i]}" "${FILE_ARRAY[$j]}"
+            fi
+        fi
+    done
+done
+
+exit 0

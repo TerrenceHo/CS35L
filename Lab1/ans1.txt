@@ -1,0 +1,94 @@
+1.
+Use man -k "<Insert String Here>" to search for manuals with this string
+
+2.
+I used the command which to determine where where cp and wc were located
+cp is located at /usr/local/cs/bin/cp
+wc is located at /usr/local/cs/bin/wc
+There is also a version of cp and wc located in /usr/local/bin, but that version
+is not used on the Linux Server because /usr/local/cs/bin appears before
+/usr/local/bin in the PATH.
+
+3. We know that executables are stored under /usr/bin.  We can use 
+ls -l /usr/bin/? which will show you all permissions of files that have one
+letter only.  The output is
+
+-rwxr-xr-x 1 root root 41496 Jun 30  2016 '['
+-rwxr-xr-x 1 root root 19904 Jun  1 04:10  w
+lrwxrwxrwx 1 root root     4 Sep 15 16:39  X -> Xorg
+
+We can see that the X executable is a symbolic link to another executable Xorg.
+The command '[' is a builtin bash command that evaluates conditional
+expressions, a synonym for the "test" builtin.
+The command 'w' is an executable that shows who is logged on and who what they
+are doing, as per the man page for w. 
+
+4. By running the commands ls -l /usr/bin/emacs we see that the emacs command is
+really just a symlink to /etc/alternatives/emacs.
+
+5. g represents the group, and s allows you to set the user or group ID on
+execution. Thus, chmod g+s allows you set it so that the file is executed by the
+group that owns it, granting permissions to the whole group.
+
+6. Use the command find -ctime -21 to find all files that were modified within
+the last 21 days.  I used the man page to search for references of time, until I
+saw that -ctime allowed you to use find files that were modified n * 24 hours
+ago.
+
+7. I used the command find / -type d -ctime 21 to find all directories that were
+modified in the last 3 weeks
+
+8. We found 293 symbolic links in the repository where find is located. We found
+find using the command which find.  We counted the number of symbolic links
+using ls -l | grep ^l | wc -l, which takes in all the input from long list
+format, passes through a grep command that finds all lines that start with l,
+and counts the number of lines that start with l.  This works because all
+symbolic links start with l.
+
+9. The oldest file is libgpg-error.so.0.10.0.  We found this by running the
+command ls -lt, which sorts long form output by time it was modified.  Any file
+with a - is a regular file, so we can just look at the last - file, which should
+be the oldest file.
+
+10. locale displays current locale settings based on environment variables that
+control the locale, which are set according to locale(7), IEEE's standard
+variables for controlling locale.
+
+11. We can use the command C-h and then press a to to find commands that have
+the associated word with them, in this case "sort".  We found these commands
+that have the word "sort"
+
+Buffer-menu-sort
+sort-columns
+sort-fields
+sort-lines
+sort-numeric-fields
+sort-pages
+sort-paragraphs
+sort-regexp-fields
+tabulated-list-col-sort
+tabulated-list-sort 
+
+12.
+C-M-a beginning-of-defun: Move backwards to beginning of defun
+C-M-b backward-sexp: Move backward across one balanced expression (sexp).
+C-M-c exit-recursive-edit: Exit from the innermost recursive edit or minibuffer.
+C-M-d down-list: Move forward down one level of parentheses.
+C-M-e end-of-defun: Move forward to next end of defun.
+C-M-f forward-sexp: Move forward across one balanced expression (sexp).
+C-M-h mark-defun: Put mark at end of this defun, point at beginning.
+
+13.
+The keybinding C-g signals a quit, and stops execution of a Lisp function when
+it is signaled.  We find the quit by using C-h-b to bring up a buffer of
+keybinding details, C-x o to switch to that buffer and use C-s to search for the
+command.
+
+14. 
+The yank function in emcas pastes the last bit of text that was killed
+within emacs.  Found by using C-h b and search for "yank".
+
+15. By default, the emacs command also lists the parent and current directory
+details.  ls -l highlights executables in green and aliases in blue.  Emacs'
+dired command only lists aliases in blue.
+

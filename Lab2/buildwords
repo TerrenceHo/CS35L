@@ -1,0 +1,35 @@
+#!/bin/bash
+# Grep for all table entries using <td>
+grep '<td>.\{1,\}<\/td>' |
+
+# Select every other line using sed
+sed -n '1~2!p' |
+
+# Replcae all uppercase to lowercase
+tr "A-Z" "a-z" |
+
+# Replace all ` with '
+tr "\`" "\'" |
+
+# Replace <td> with nothing.  Do the same for all html tags
+sed 's/<td>//g' |
+sed 's/<\/td>//g' |
+sed 's/<u>//g' |
+sed 's/<\/u>//g' |
+
+# # Remove all leading spaces
+sed 's/^\s*//g' |
+
+# # Remove all commas and replace spaces with a new line
+sed 's/,//g' |
+sed 's/\s/\n/g' | 
+
+# # remove anything that is not a Hawaiian letter
+sed '/-/d' |
+tr -cd "pk\'mnwlhaeiou\n" | 
+
+# sort input and make unique
+sort -u |
+sed '/^$/d'
+
+exit 0
